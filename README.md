@@ -9,7 +9,28 @@ As a big data engineer, you need to architect and build a solution to cater to t
 Fraud detection solution: This is a feature to detect fraudulent transactions, wherein once a cardmember swipes their card for payment, the transaction is classified as fraudulent or authentic based on a set of predefined rules. If fraud is detected, then the transaction must be declined. Please note that incorrectly classifying a transaction as fraudulent will incur huge losses to the company and also provoke negative consumer sentiment. 
 
 Customer information: The relevant information about the customers needs to be continuously updated on a platform from where the customer support team can retrieve relevant information in real-time to resolve customer complaints and queries.
+he details of the member and the credit score associated with members are hosted on a central AWS RDS server. The historical transaction data will be provided as a CSV file. You need to use appropriate ingestion methods available to bring the card_member and member_score data from the AWS RDS into a Hadoop platform. You also need to load the historical card transactions into a NoSQL database. This data is then processed to fill data in the look-up table. 
 
+Now, the data from the several POS systems will flow inside the architecture through a queuing system such as Kafka. The POS data from Kafka will be consumed by the streaming data processing framework to identify the authenticity of the transactions.
+
+You should note that one of the Service-Level Agreement (SLAs) of the company is to complete the transaction within a few seconds. Once the POS data from Kafka is entered into the stream processing layer, it is then assessed based on some parameters defined by the rules. The values for these parameters are fetched from the look-up table. The transaction is allowed to complete only when the results are positive for these rules. If the result for any rule is negative, then the transaction should be classified as fraud.
+
+Once the transaction is classified as genuine, then, corresponding to the card ID in the look-up table, the postcode and the transaction date of the current transaction need to be updated as per the last transaction. These fields should only be updated if the transaction gets classified as genuine.
+
+The card_transactions table also needs to be updated with all the details along with the classification of the transactions.
+ 
+
+The lookup table will contain the following details:
+
+Card id 
+
+Upper control limit (UCL) 
+
+Postcode of the last transaction 
+
+Transaction date of the last transaction
+
+The credit score of the member
 
 The following tables containing data will be taken into consideration to solve this problem:
 
