@@ -1,95 +1,148 @@
 # CREDIT_FRAUD_CAPSTONE_PROJECT
+Credit card fraud is defined as a form of identity theft in which an individual uses someone else’s credit card information to make purchases or to withdraw funds from the account. The incidence of such fraudulent transactions has skyrocketed as the world has moved towards a digital era. The following statistics will help you understand the gravity of the situation.
 
-Credit card fraud is defined as a form of identity theft in which an individual uses someone else’s credit card information to make purchases or to withdraw funds from the account. 
-The incidence of such fraudulent transactions has skyrocketed as the world has moved towards a digital era. 
-The following statistics will help you understand the gravity of the situation.
+![image](https://github.com/user-attachments/assets/f5da5422-76d8-478c-82d3-b94cead50cd7)
 With the rising number of fraud cases, the company’s major focus is to provide its customers with a delightful experience while ensuring that security is not compromised.
 
 As a big data engineer, you need to architect and build a solution to cater to the following requirements:
-Fraud detection solution: This is a feature to detect fraudulent transactions, wherein once a cardmember swipes their card for payment, the transaction is classified as fraudulent or authentic based on a set of predefined rules. If fraud is detected, then the transaction must be declined. Please note that incorrectly classifying a transaction as fraudulent will incur huge losses to the company and also provoke negative consumer sentiment. 
-
-Customer information: The relevant information about the customers needs to be continuously updated on a platform from where the customer support team can retrieve relevant information in real-time to resolve customer complaints and queries.
-he details of the member and the credit score associated with members are hosted on a central AWS RDS server. The historical transaction data will be provided as a CSV file. You need to use appropriate ingestion methods available to bring the card_member and member_score data from the AWS RDS into a Hadoop platform. You also need to load the historical card transactions into a NoSQL database. This data is then processed to fill data in the look-up table. 
-
-Now, the data from the several POS systems will flow inside the architecture through a queuing system such as Kafka. The POS data from Kafka will be consumed by the streaming data processing framework to identify the authenticity of the transactions.
-
-You should note that one of the Service-Level Agreement (SLAs) of the company is to complete the transaction within a few seconds. Once the POS data from Kafka is entered into the stream processing layer, it is then assessed based on some parameters defined by the rules. The values for these parameters are fetched from the look-up table. The transaction is allowed to complete only when the results are positive for these rules. If the result for any rule is negative, then the transaction should be classified as fraud.
-
-Once the transaction is classified as genuine, then, corresponding to the card ID in the look-up table, the postcode and the transaction date of the current transaction need to be updated as per the last transaction. These fields should only be updated if the transaction gets classified as genuine.
-
-The card_transactions table also needs to be updated with all the details along with the classification of the transactions.
- 
-
-The lookup table will contain the following details:
-
-Card id 
-
-Upper control limit (UCL) 
-
-Postcode of the last transaction 
-
-Transaction date of the last transaction
-
-The credit score of the member
+  Fraud detection solution: This is a feature to detect fraudulent transactions, wherein once a cardmember swipes their card for payment, the transaction is classified as fraudulent or authentic based on a set of predefined rules. If fraud is detected, then the   transaction must be declined. Please note that incorrectly classifying a transaction as fraudulent will incur huge losses to the company and also provoke negative consumer sentiment. 
+  Customer information: The relevant information about the customers needs to be continuously updated on a platform from where the customer support team can retrieve relevant information in real-time to resolve customer complaints and queries.
 
 The following tables containing data will be taken into consideration to solve this problem:
 
+    
+    card_member (The cardholder’s data is stored in a central AWS RDS.)
+    
+    card_id: This refers to the card number.
+    
+    member_id: This is the 15-digit member ID of the cardholder.
+    
+    member_joining_dt: This is the date and time of joining of new member.
+    
+    card_purchase_dt: This is the date on which the card was purchased.
+    
+    country: This is the country in which the card was purchased.
+    
+    city: This is the city in which the card was purchased.
+    
+    card_transactions (All incoming transactions (fraud/genuine) swiped at point of sale (POS) terminals are stored in this table.) 
+    
+    card_id: This refers to the card number.
+    
+    member_id: This is the 15-digit member ID of the cardholder.
+    
+    amount: This is the amount that is swiped with respect to the card_id.
+    
+    postcode: This is the ZIP code at which this card was swiped (marking the location of an event).
+    
+    pos_id: This is the merchant’s POS terminal ID, using which the card was swiped.
+    
+    transaction_dt: This is the date and time of the transaction.
+    
+    status: This indicates whether the transaction was approved or not, with a genuine/fraud value.
+    
+    member_score (The member credit score data is stored in a central AWS RDS.)
+    
+    member_id: This is the 15-digit member ID of the cardholder.
+    
+    score: This is the score assigned to a member defining their credit history, generated by upstream systems.
+
  
-
-card_member (The cardholder’s data is stored in a central AWS RDS.)
-
-card_id: This refers to the card number.
-
-member_id: This is the 15-digit member ID of the cardholder.
-
-member_joining_dt: This is the date and time of joining of new member.
-
-card_purchase_dt: This is the date on which the card was purchased.
-
-country: This is the country in which the card was purchased.
-
-city: This is the city in which the card was purchased.
-
-card_transactions (All incoming transactions (fraud/genuine) swiped at point of sale (POS) terminals are stored in this table.) 
-
-card_id: This refers to the card number.
-
-member_id: This is the 15-digit member ID of the cardholder.
-
-amount: This is the amount that is swiped with respect to the card_id.
-
-postcode: This is the ZIP code at which this card was swiped (marking the location of an event).
-
-pos_id: This is the merchant’s POS terminal ID, using which the card was swiped.
-
-transaction_dt: This is the date and time of the transaction.
-
-status: This indicates whether the transaction was approved or not, with a genuine/fraud value.
-
-member_score (The member credit score data is stored in a central AWS RDS.)
-
-member_id: This is the 15-digit member ID of the cardholder.
-
-score: This is the score assigned to a member defining their credit history, generated by upstream systems.
-
- 
-
 Data related to card_member and member_score is stored in a central AWS RDS. You will be given the card_transactions data, which has already been classified, in the form of a CSV file, which you can load in your NoSQL database.
 
  
 
-The other type of data is the real-time streaming data that is generated by the POS systems in a JSON format. The streaming data looks like this:
+    The other type of data is the real-time streaming data that is generated by the POS systems in a JSON format. The streaming data looks like this:
+    
+    Transactional payload (data) attributes sent by POS terminals’ gateway API on to the Kafka topic:
+    
+    card_id: This is the card number.
+    
+    member_id: This is the 15-digit member ID of the cardholder.
+    
+    amount: This is the amount that is swiped with respect to the card_id.
+    
+    pos_id: This is the merchant’s POS terminal ID, using which the card was swiped.
+    
+    postcode: This is the ZIP code at which this card was swiped (marking the location of an event).
+    
+    transaction_dt: This is the date and time of the transaction.
+    
+    Here is an example of a JSON payload structure that gets produced.
+   ![image](https://github.com/user-attachments/assets/95724157-cd64-46c3-a22d-9ffc79a1ef95)
 
-Transactional payload (data) attributes sent by POS terminals’ gateway API on to the Kafka topic:
+## Architecture and Approach  
+![image](https://github.com/user-attachments/assets/714d26fb-54bc-4bf3-85eb-143e2d045f6e)
 
-card_id: This is the card number.
+The details of the member and the credit score associated with members are hosted on a central AWS RDS server. The historical transaction data will be provided as a CSV file. You need to use appropriate ingestion methods available to bring the card_member and member_score data from the AWS RDS into a Hadoop platform. You also need to load the historical card transactions into a NoSQL database. This data is then processed to fill data in the look-up table. 
 
-member_id: This is the 15-digit member ID of the cardholder.
+ 
 
-amount: This is the amount that is swiped with respect to the card_id.
+Now, the data from the several POS systems will flow inside the architecture through a queuing system such as Kafka. The POS data from Kafka will be consumed by the streaming data processing framework to identify the authenticity of the transactions.
 
-pos_id: This is the merchant’s POS terminal ID, using which the card was swiped.
+ 
 
-postcode: This is the ZIP code at which this card was swiped (marking the location of an event).
+You should note that one of the Service-Level Agreement (SLAs) of the company is to complete the transaction within a few seconds. Once the POS data from Kafka is entered into the stream processing layer, it is then assessed based on some parameters defined by the rules. The values for these parameters are fetched from the look-up table. The transaction is allowed to complete only when the results are positive for these rules. If the result for any rule is negative, then the transaction should be classified as fraud.
 
-transaction_dt: This is the date and time of the transaction.
+ 
+
+Once the transaction is classified as genuine, then, corresponding to the card ID in the look-up table, the postcode and the transaction date of the current transaction need to be updated as per the last transaction. These fields should only be updated if the transaction gets classified as genuine.
+
+ 
+
+The card_transactions table also needs to be updated with all the details along with the classification of the transactions.
+
+ 
+
+The lookup table will contain the following details:
+    
+    Card id 
+    
+    Upper control limit (UCL) 
+    
+    Postcode of the last transaction 
+    
+    Transaction date of the last transaction
+    
+    The credit score of the member
+
+ 
+
+In the next video, you will look at the different parameters and learn how to use them to classify a transaction as fraud or genuine.
+
+Note: In the video below, there was a problem with the SME's presentation software due to which the bullet points are not working correctly. Also, in this video from 4:45 - 5:14 when the SME is talking about the Zip Code Analysis part, there is a slight audio-video sync issue where the audio of the SME is coming earlier than the corresponding video and so the corresponding points in the slide may appear to be a bit delayed.
+
+
+1. Upper control limit (UCL): Every card user has an upper limit on the amount per transaction, which is different from the maximum transaction limit on each card. This parameter is an indicator of the transaction pattern associated with a particular customer. This upper bound, also known as the upper control limit (UCL), can be used as a parameter to authenticate a transaction. Suppose you have a past record of making transactions with an average amount of $20,000, and one day, the system observes a transaction of $200,000 through your card. This can be a possible case of fraud. In such cases, the cardholder receives a call from the credit card company executives to validate the transaction. UCL is derived using the following formula:
+
+ 
+
+UCL = Moving average + 3 × (Standard deviation)
+
+ 
+
+This formula is used to derive the UCL value for each card_id. The moving average and the standard deviation for each card_id are calculated based on the last 10 amounts credited that were classified as genuine.
+
+2. Credit score of each member: This is a straightforward rule, where you have a member_score table in which member IDs and their respective scores are available. These scores are updated by a third-party service. If the score is less than 200, that member’s transaction is rejected, as they could be a defaulter. This rule simply defines the financial reputation of each customer.
+
+
+3. ZIP code distance: The whole purpose of this rule is to keep a check on the distance between the card owner's current and last transaction location with respect to time. If the distance between the current transaction and the last transaction location with respect to time is greater than a particular threshold, then this raises suspicion on the authenticity of the transaction. Suppose at time t = t0 minutes, a transaction is recorded in Mumbai, and at time t
+
+= (t0 + 10) minutes, a transaction from the same card_id is recorded in New York. A flight flies with a cruising speed of about 900 km/hr, which means that someone travelling by Airbus can travel a kilometre in four seconds. This (a transaction in Mumbai followed by one in New York after 10 minutes) can be a possible case of fraud. Such cases happen often, when someone acquires your credit card details and makes transactions online. In such cases, the cardholder receives a call from the credit card company executive to validate the transaction.
+
+Now that you have a fair understanding of these parameters, let’s discuss the approach to calculating them.
+
+Let’s start with the upper control limit (UCL). The historical transactional data is stored in the card_transactions table, which was defined earlier. The UCL value needs to be calculated for each card_id for the last 10 transactions. One approach could be to trigger the computation of this parameter for a card_id every time a transaction occurs. However, considering the few seconds SLA, this might not be a good practice, as batch jobs are always associated with huge time delays.
+
+Another approach could be to have a lookup table that stores the UCL values based on the moving average and standard deviation of the last 10 transactions for each card_id. Whenever a transaction occurs, the record corresponding to the card_id can be easily fetched from this lookup table, rather than calculating the UCL value at the time of the transaction. 
+
+The second parameter is based on the credit score of the member. If this score is less than 200, then the transaction needs to be declined, as the member could turn out to be a defaulter.
+
+The third parameter is based on the ZIP code analysis. Store the ‘postcode’ and ‘transaction_dt’ parameters pertaining to the last transaction for each card_id in the look-up table. Whenever a new transaction occurs, retrieve the ‘postcode’ and ‘transaction_dt’ attributes from the look-up table and compare these with the current ‘postcode’ and ‘transaction_dt’ data. Use the API to calculate the speed at which the user moved from the origin. If it is more than the imaginable speed, this can be a possible case of fraud. In such cases, the cardholder receives a call from the credit card company executive to validate the transaction. 
+
+After initiating the real-time process following each member’s transaction, update the current received transaction’s ‘postcode’ and ‘transaction_dt’ as the last ZIP code and time in the lookup table stored in the NoSQL database if and only if the transaction is approved (satisfying all three rules).
+
+Once a transaction is evaluated based on the aforementioned three parameters, the transaction, along with the status (i.e., genuine or fraud) of the transaction, is stored in the card_transactions table in the database.
+Once you start the Kafka consumer in the streaming framework, each transaction of different members will be iterated and checked for these rules without any lag.
+
+Now in the next segment, you will learn about the different tasks that you will be working on in this capstone project.
